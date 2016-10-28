@@ -23,8 +23,7 @@ from flask import Flask, request, render_template, g, redirect, Response
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-DATABASEURI = "sqlite://mva2112:n3dek@104.196.200.182/postgres"
-
+DATABASEURI = "postgres://mva2112:n3dek@104.196.175.120/postgres"
 
 # This line creates a database engine that knows how to connect to the URI above
 engine = create_engine(DATABASEURI)
@@ -89,11 +88,13 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT name FROM test")
+  cursor = g.conn.execute("SELECT email FROM users;")
   names = []
   for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
+    names.append(result['email'])  # can also be accessed using result[0]
   cursor.close()
+
+
 
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
@@ -146,8 +147,8 @@ def another():
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
+#  name = request.form['name']
+#  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
   return redirect('/')
 
 
