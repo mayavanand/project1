@@ -1,29 +1,12 @@
-<html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+{%- extends "base.html" %}
+{% import "bootstrap/utils.html" as utils %}
 
-
-<body>
-  <h1>Users</h1>
-
-
-  <div>
-    {% for n in data %}
-    <div>{{n}}</div>
-    {% endfor %}
-  </div>
-
-<p><a href="/another">Go to the other page</a></p>
-
-
-
-
-
-</body>
-
-
-</html>
+{% block content %}
+<div class="container">
+</div>
+<div class="jumbotron">
+<h1>Welcome to DNA Explorer</h1>
+<p> This is Maya and Hollis's Project 1 for Professor Wu's database class.</p>
+</div>
+</div>
+{%-endblock %}
