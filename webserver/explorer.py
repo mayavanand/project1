@@ -26,7 +26,7 @@ def create_app():
     app = Flask(__name__, template_folder=tmpl_dir)
     Bootstrap(app)
     return app
-
+app = create_app()
 DATABASEURI = "postgres://mva2112:n3dek@104.196.175.120/postgres"
 
 # This line creates a database engine that knows how to connect to the URI above
@@ -134,16 +134,26 @@ def index():
   # for example, the below file reads template/index.html
   #
   return render_template("index.html", **context)
-@app.route('/group/Hair_Color')
-def group():
-  category = "Hair Color"
+
+@app.route('/groups')
+def groups():
+  groups = []
+  cursor = g.conn.execute("SELECT DISTINCT category FROM relational_groups;")
+  for result in cursor:
+    groups.append(result['category'])  # can also be accessed using result[0]
+  cursor.close()
+  context = dict(data = groups)
+  return render_template("groupsTry1.html", **context)
+
+@app.route('/group/<category>')
+def singleGroup(category):
   cursor = g.conn.execute("SELECT * FROM relational_groups WHERE category = \'"+ category + "\';")
   rsid = []
   for result in cursor:
     rsid.append(result['rsid'])  # can also be accessed using result[0]
   cursor.close()
   context = dict(data = rsid)
-  return render_template("index.html", **context)
+  return render_template("groupRSID.html", **context)
 #
 # This is an example of a different path.  You can see it at
 # 
