@@ -130,7 +130,16 @@ def index():
   # for example, the below file reads template/index.html
   #
   return render_template("index.html", **context)
-
+@app.route('/group/Hair_Color')
+def group():
+  category = "Hair Color"
+  cursor = g.conn.execute("SELECT * FROM relational_groups WHERE category = \'"+ category + "\';")
+  rsid = []
+  for result in cursor:
+    rsid.append(result['rsid'])  # can also be accessed using result[0]
+  cursor.close()
+  context = dict(data = rsid)
+  return render_template("index.html", **context)
 #
 # This is an example of a different path.  You can see it at
 # 
