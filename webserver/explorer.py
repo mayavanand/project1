@@ -3,7 +3,7 @@
 """
 Columbia W4111 Intro to databases
 Maya Anand and Hollis Mills
-
+mva2112 and hm2602
 To run locally
 
     python explorer.py
