@@ -1,0 +1,22 @@
+{# ```base.html``` is a template that all the other templates derive from
+#}
+
+{%- extends "bootstrap/base.html" %}
+
+{% block title %}DNA Explorer by Maya and Hollis{% endblock %}
+
+{% import "bootstrap/fixes.html" as fixes %}
+
+{% block head %}
+{{super()}}
+
+{{fixes.ie8()}}
+{%- enblock %}
+
+{% block styles -%}
+    {{super()}}
+{% endblock %}
+
+{% block navbar %}
+{nav.frontend_top.render()}}
+{% endblock %}

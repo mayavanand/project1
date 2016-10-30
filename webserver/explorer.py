@@ -27,6 +27,7 @@ def create_app():
     Bootstrap(app)
     return app
 
+app = create_app()
 DATABASEURI = "postgres://mva2112:n3dek@104.196.175.120/postgres"
 
 # This line creates a database engine that knows how to connect to the URI above
