@@ -8,8 +8,8 @@ To run locally
 
     python explorer.py
 
-Go to http://104.196.182.25:8111 in your browser
-
+MAYA: Go to http://104.196.182.25:8111 in your browser
+HOLLIS: Go to http://104.196.194.224:8111 in your browser
 
 A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
@@ -19,9 +19,13 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
+from flask_bootstrap import Bootstrap
 
-tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-app = Flask(__name__, template_folder=tmpl_dir)
+def create_app():
+    tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+    app = Flask(__name__, template_folder=tmpl_dir)
+    Bootstrap(app)
+    return app
 
 DATABASEURI = "postgres://mva2112:n3dek@104.196.175.120/postgres"
 
