@@ -154,6 +154,32 @@ def singleGroup(category):
   cursor.close()
   context = dict(data = rsid)
   return render_template("groupRSID.html", **context)
+@app.route('/<rsid>')
+def variant(rsid):
+  variant = []
+  cursor = g.conn.execute("SELECT * FROM variant, article WHERE variant.rsid=\'"+rsid+"\' AND variant.rsid = article.rsid;")
+  result = cursor.fetchone()
+  if result is None:
+    cursor = g.conn.execute("SELECT * FROM variant WHERE variant.rsid=\'"+rsid+"\';")
+    result = cursor.fetchone()
+  variant.append(result['rsid'])
+  variant.append(result['chrom'])
+  variant.append(result['pos'])
+  variant.append(result['ref'])
+  variant.append(result['alt'])
+  variant.append(result['cid'])
+  if 'title' in result:
+    variant.append(result['title']) 
+    variant.append(result['first_author'])                                                                                    
+    variant.append(result['link'])
+    if (cursor.rowcount == 2):
+      result2 = cursor.fetchone()
+      variant.append(result2['title'])
+      variant.append(result2['first_author'])                                                                                                                      
+      variant.append(result2['link'])                                                                                
+  cursor.close()
+  context = dict(data = variant)
+  return render_template("variantTry2.html", **context)
 #
 # This is an example of a different path.  You can see it at
 # 
