@@ -20,6 +20,9 @@ from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
 from flask_bootstrap import Bootstrap
+from flask_nav import Nav
+from flask_nav.elements import Navbar, View
+
 
 def create_app():
     tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -28,6 +31,7 @@ def create_app():
     return app
 
 app = create_app()
+nav = Nav()
 DATABASEURI = "postgres://mva2112:n3dek@104.196.175.120/postgres"
 
 # This line creates a database engine that knows how to connect to the URI above
@@ -60,6 +64,14 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
+@nav.navigation()
+def mynavbar():
+    return Navbar(
+        'mysite',
+        View('Home', 'index'),
+    )
+
+nav.init_app(app)
 
 #
 # @app.route is a decorator around index() that means:
