@@ -29,7 +29,6 @@ def create_app():
     app = Flask(__name__, template_folder=tmpl_dir)
     Bootstrap(app)
     return app
-
 app = create_app()
 nav = Nav()
 DATABASEURI = "postgres://mva2112:n3dek@104.196.175.120/postgres"
@@ -146,18 +145,53 @@ def index():
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  #return render_template("index.html", **context)
   return render_template("index.html")
-@app.route('/group/Hair_Color')
-def group():
-  category = "Hair Color"
+
+@app.route('/groups')
+def groups():
+  groups = []
+  cursor = g.conn.execute("SELECT DISTINCT category FROM relational_groups;")
+  for result in cursor:
+    groups.append(result['category'])  # can also be accessed using result[0]
+  cursor.close()
+  context = dict(data = groups)
+  return render_template("groupsTry1.html", **context)
+
+@app.route('/group/<category>')
+def singleGroup(category):
   cursor = g.conn.execute("SELECT * FROM relational_groups WHERE category = \'"+ category + "\';")
   rsid = []
   for result in cursor:
     rsid.append(result['rsid'])  # can also be accessed using result[0]
   cursor.close()
   context = dict(data = rsid)
-  return render_template("index.html", **context)
+  return render_template("groupRSID.html", **context)
+@app.route('/<rsid>')
+def variant(rsid):
+  variant = []
+  cursor = g.conn.execute("SELECT * FROM variant, article WHERE variant.rsid=\'"+rsid+"\' AND variant.rsid = article.rsid;")
+  result = cursor.fetchone()
+  if result is None:
+    cursor = g.conn.execute("SELECT * FROM variant WHERE variant.rsid=\'"+rsid+"\';")
+    result = cursor.fetchone()
+  variant.append(result['rsid'])
+  variant.append(result['chrom'])
+  variant.append(result['pos'])
+  variant.append(result['ref'])
+  variant.append(result['alt'])
+  variant.append(result['cid'])
+  if 'title' in result:
+    variant.append(result['title']) 
+    variant.append(result['first_author'])                                                                                    
+    variant.append(result['link'])
+    if (cursor.rowcount == 2):
+      result2 = cursor.fetchone()
+      variant.append(result2['title'])
+      variant.append(result2['first_author'])                                                                                                                      
+      variant.append(result2['link'])                                                                                
+  cursor.close()
+  context = dict(data = variant)
+  return render_template("variantTry2.html", **context)
 #
 # This is an example of a different path.  You can see it at
 # 

@@ -1,0 +1,57 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+<body>
+  <h1>Variant</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>RSID</th>                                                                                     
+      <th>Chromosone</th>
+      <th>Position</th>
+      <th>Reference</th>
+      <th>Alternate</th>
+      <th>Cytoband</th>
+
+    </tr>
+  </thead>
+  
+<tbody>
+    <tr>
+    {% for n in data[:6] %}
+    <td>{{n}}</td>
+    {% endfor %}
+    </tr>
+</tbody></table>
+<h1> Related Articles </h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>First Author</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+<tbody>
+    <tr>
+    {% for n in data[6:9] %}
+    <td>{{n}}</td>
+    {% endfor %}
+    </tr>
+    <tr>
+    {% for n in data[9:12] %}
+    <td>{{n}}</td>
+    {% endfor %}
+    </tr>
+</tbody></table>
+<p><a href="/another">Go to the other page</a></p>
+<p><a href="/groups">Go to relational groups page</a></p>
+<p><a href="/">Go to index</a></p>
+</body>
+
+
+</html>
