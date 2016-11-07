@@ -192,6 +192,21 @@ def variant(rsid):
   cursor.close()
   context = dict(data = variant)
   return render_template("variantTry2.html", **context)
+
+@app.route('/cytoband/<cid>')
+def cytoband(cid):
+    cursor = g.conn.execute("SELECT * FROM cytoband WHERE cid = \'"+ cid + "\';")
+    cyto = []
+    result = cursor.fetchone()
+    cyto.append(result['cyto_name'])
+    cyto.append(result['chrom'])    
+    cyto.append(result['start_pos'])
+    cyto.append(result['end_pos'])
+    cyto.append(result['gie_stain'])
+    cursor.close()
+    context = dict(data = cyto)
+    return render_template("cytoband.html", **context)
+ 
 #
 # This is an example of a different path.  You can see it at
 # 
