@@ -180,6 +180,7 @@ def variant(rsid):
   variant.append(result['ref'])
   variant.append(result['alt'])
   variant.append(result['cid'])
+  variant.append(result['gid'])
   if 'title' in result:
     variant.append(result['title']) 
     variant.append(result['first_author'])                                                                                    
@@ -192,7 +193,19 @@ def variant(rsid):
   cursor.close()
   context = dict(data = variant)
   return render_template("variantTry2.html", **context)
-
+@app.route('/gene/<gid>')
+def gene(gid):
+    cursor = g.conn.execute("SELECT * from gene WHERE gid = \'" + gid + "\';")
+    geneInfo = []
+    result = cursor.fetchone()
+    geneInfo.append(result['gene_name'])
+    geneInfo.append(result['chrom'])
+    geneInfo.append(result['start_pos'])
+    geneInfo.append(result['end_pos'])
+    geneInfo.append(result['phenotype'])
+    cursor.close()
+    context = dict(data = geneInfo)
+    return render_template("gene.html", **context)
 @app.route('/cytoband/<cid>')
 def cytoband(cid):
     cursor = g.conn.execute("SELECT * FROM cytoband WHERE cid = \'"+ cid + "\';")

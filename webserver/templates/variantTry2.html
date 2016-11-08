@@ -16,7 +16,7 @@
       <th>Reference</th>
       <th>Alternate</th>
       <th>Cytoband</th>
-
+      <th>Gene</th>
     </tr>
   </thead>
   
@@ -27,6 +27,8 @@
     {% endfor %}
     <td><a href="/cytoband/{{data[5]}}">
     {{data[5]}}</a></td>
+    <td><a href="/gene/{{data[6]}}">
+    {{data[6]}}</a></td>
     </tr>
 </tbody></table>
 <h1> Related Articles </h1>
@@ -40,12 +42,12 @@
   </thead>
 <tbody>
     <tr>
-    {% for n in data[6:9] %}
+    {% for n in data[7:10] %}
     <td>{{n}}</td>
     {% endfor %}
     </tr>
     <tr>
-    {% for n in data[9:12] %}
+    {% for n in data[10:13] %}
     <td>{{n}}</td>
     {% endfor %}
     </tr>
