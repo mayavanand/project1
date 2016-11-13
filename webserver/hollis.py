@@ -100,6 +100,17 @@ def groups():
   context = dict(data = groups)
   return render_template("groupsTry1.html", **context)
 
+@app.route('/search')
+def search():
+    ids = []
+    cursor = g.conn.execute("SELECT rsid FROM variant;")
+    for result in cursor:
+       ids.append(result['rsid'])  # can also be accessed using result[0]
+    cursor.close()
+    context = dict(data = ids)
+    return render_template("search.html", **context)
+
+
 @app.route('/group/<category>')
 def singleGroup(category):
   cursor = g.conn.execute("SELECT * FROM relational_groups WHERE category = \'"+ category + "\';")
@@ -237,9 +248,7 @@ def signup():
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
-    return redirect(url_for('index'))
-
+    return render_template('groups.html')
 if __name__ == "__main__":
   import click
 
