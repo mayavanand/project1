@@ -124,6 +124,7 @@ def variant(rsid):
   variant.append(result['ref'])
   variant.append(result['alt'])
   variant.append(result['cid'])
+  variant.append(result['gid'])
   if 'title' in result:
     variant.append(result['title']) 
     variant.append(result['first_author'])                                                                                    
@@ -136,6 +137,47 @@ def variant(rsid):
   cursor.close()
   context = dict(data = variant)
   return render_template("variantTry2.html", **context)
+<<<<<<< HEAD
+=======
+@app.route('/gene/<gid>')
+def gene(gid):
+    cursor = g.conn.execute("SELECT * from gene WHERE gid = \'" + gid + "\';")
+    geneInfo = []
+    result = cursor.fetchone()
+    geneInfo.append(result['gene_name'])
+    geneInfo.append(result['chrom'])
+    geneInfo.append(result['start_pos'])
+    geneInfo.append(result['end_pos'])
+    geneInfo.append(result['phenotype'])
+    cursor.close()
+    context = dict(data = geneInfo)
+    return render_template("gene.html", **context)
+@app.route('/cytoband/<cid>')
+def cytoband(cid):
+    cursor = g.conn.execute("SELECT * FROM cytoband WHERE cid = \'"+ cid + "\';")
+    cyto = []
+    result = cursor.fetchone()
+    cyto.append(result['cyto_name'])
+    cyto.append(result['chrom'])    
+    cyto.append(result['start_pos'])
+    cyto.append(result['end_pos'])
+    cyto.append(result['gie_stain'])
+    cursor.close()
+    context = dict(data = cyto)
+    return render_template("cytoband.html", **context)
+ 
+#
+# This is an example of a different path.  You can see it at
+# 
+#     localhost:8111/another
+#
+# notice that the functio name is another() rather than index()
+# the functions for each app.route needs to have different names
+#
+@app.route('/another')
+def another():
+  return render_template("anotherfile.html")
+>>>>>>> af90b37b7e04865f8be8cf41551943bd8e093b49
 
 
 # Example of adding new data to the database
