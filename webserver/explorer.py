@@ -137,8 +137,7 @@ def variant(rsid):
   cursor.close()
   context = dict(data = variant)
   return render_template("variantTry2.html", **context)
-<<<<<<< HEAD
-=======
+
 @app.route('/gene/<gid>')
 def gene(gid):
     cursor = g.conn.execute("SELECT * from gene WHERE gid = \'" + gid + "\';")
@@ -165,28 +164,6 @@ def cytoband(cid):
     cursor.close()
     context = dict(data = cyto)
     return render_template("cytoband.html", **context)
- 
-#
-# This is an example of a different path.  You can see it at
-# 
-#     localhost:8111/another
-#
-# notice that the functio name is another() rather than index()
-# the functions for each app.route needs to have different names
-#
-@app.route('/another')
-def another():
-  return render_template("anotherfile.html")
->>>>>>> af90b37b7e04865f8be8cf41551943bd8e093b49
-
-
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-#  name = request.form['name']
-#  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-  return redirect('/')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
