@@ -157,6 +157,17 @@ def groups():
   context = dict(data = groups)
   return render_template("groupsTry1.html", **context)
 
+@app.route('/search')
+def search():
+    ids = []
+    cursor = g.conn.execute("SELECT rsid FROM variant;")
+    for result in cursor:
+       ids.append(result['rsid'])  # can also be accessed using result[0]
+    cursor.close()
+    context = dict(data = ids)
+    return render_template("search.html", **context)
+
+
 @app.route('/group/<category>')
 def singleGroup(category):
   cursor = g.conn.execute("SELECT * FROM relational_groups WHERE category = \'"+ category + "\';")
@@ -180,6 +191,10 @@ def variant(rsid):
   variant.append(result['ref'])
   variant.append(result['alt'])
   variant.append(result['cid'])
+  gid = result['gid']
+  cursorGene = g.conn.execute("SELECT gene_name FROM gene WHERE gene.gid="+str(gid)+";")
+  resultGene = cursorGene.fetchone()
+  variant.append(resultGene['gene_name'])
   variant.append(result['gid'])
   if 'title' in result:
     variant.append(result['title']) 
@@ -193,6 +208,7 @@ def variant(rsid):
   cursor.close()
   context = dict(data = variant)
   return render_template("variantTry2.html", **context)
+
 @app.route('/gene/<gid>')
 def gene(gid):
     cursor = g.conn.execute("SELECT * from gene WHERE gid = \'" + gid + "\';")

@@ -1,10 +1,6 @@
+{% extends "base.html" %}
 <html>
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+{% block content %}
 <body>
   <h1>Variant</h1>
 <table class="table">
@@ -27,10 +23,11 @@
     {% endfor %}
     <td><a href="/cytoband/{{data[5]}}">
     {{data[5]}}</a></td>
-    <td><a href="/gene/{{data[6]}}">
+    <td><a href="/gene/{{data[7]}}">
     {{data[6]}}</a></td>
     </tr>
 </tbody></table>
+{% if data|length > 8 %}
 <h1> Related Articles </h1>
 <table class="table">
   <thead>
@@ -42,20 +39,21 @@
   </thead>
 <tbody>
     <tr>
-    {% for n in data[7:10] %}
+    {% for n in data[8:11] %}
     <td>{{n}}</td>
     {% endfor %}
     </tr>
     <tr>
-    {% for n in data[10:13] %}
+    {% for n in data[11:14] %}
     <td>{{n}}</td>
     {% endfor %}
     </tr>
 </tbody></table>
+{% endif %}
 <p><a href="/another">Go to the other page</a></p>
 <p><a href="/groups">Go to relational groups page</a></p>
 <p><a href="/">Go to index</a></p>
 </body>
 
-
+{% endblock %}
 </html>
