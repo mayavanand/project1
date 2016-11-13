@@ -58,6 +58,7 @@ class SignupForm(FlaskForm):
     email = StringField('Email', validators=[Required(), Email()])
     password = PasswordField('Password', validators=[Required()])
     institution = StringField('Institution (optional)')
+    submit = SubmitField('Sign Up')
 
 @app.before_request
 def before_request():
