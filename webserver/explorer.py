@@ -124,6 +124,10 @@ def variant(rsid):
   variant.append(result['ref'])
   variant.append(result['alt'])
   variant.append(result['cid'])
+  gid = result['gid']
+  cursorGene = g.conn.execute("SELECT gene_name FROM gene WHERE gene.gid="+str(gid)+";")
+  resultGene = cursorGene.fetchone()
+  variant.append(resultGene['gene_name'])
   variant.append(result['gid'])
   if 'title' in result:
     variant.append(result['title']) 
