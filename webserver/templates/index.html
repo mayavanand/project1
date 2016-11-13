@@ -9,6 +9,9 @@
 <div class="container">
 </div>
 <div class="jumbotron">
+{% if session_user_name != "" %}
+<h2>Hi {{session_user_name}}!</h2>
+{% endif %}
 <h1>Welcome to DNA Explorer</h1>
 <p> This is Maya and Hollis's Project 1 for Professor Wu's database class.</p>
 </div>
