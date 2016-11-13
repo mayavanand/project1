@@ -233,7 +233,9 @@ def signup():
 
 @app.route('/logout')
 def logout():
-    return render_template('groups.html')
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
 if __name__ == "__main__":
   import click
 
