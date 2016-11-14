@@ -26,6 +26,7 @@ from flask_nav.elements import *
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import Required, Email
+from functools import wraps
 
 #Create app and configure boostrap
 def create_app():
@@ -83,6 +84,14 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/')
 def index():
     if 'username' in session:
@@ -99,7 +108,9 @@ def search():
     cursor.close()
     context = dict(data = ids)
     return render_template("search2.html", **context)
+
 @app.route('/groups')
+@login_required
 def groups():
   groups = []
   cursor = g.conn.execute("SELECT DISTINCT category FROM relational_groups;")
