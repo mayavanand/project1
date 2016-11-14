@@ -1,10 +1,6 @@
+{% extends "base.html" %}
 <html>
-  <style>
-    body{
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+{% block content %}
 <body>
   <h1>Cytoband</h1>
 <table class="table">
@@ -24,10 +20,7 @@
     {% endfor %}
      </tr>
 </tbody></table>
-<p><a href="/another">Go to the other page</a></p>
-<p><a href="/groups">Go to relational groups page</a></p>
-<p><a href="/">Go to index</a></p>
 </body>
-
+{% endblock %}
 
 </html>

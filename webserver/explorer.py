@@ -102,7 +102,7 @@ def index():
 @app.route('/search')
 def search():
     ids = []
-    cursor = g.conn.execute("SELECT rsid FROM variant;")
+    cursor = g.conn.execute("SELECT rsid FROM variant ORDER BY rsid::bytea;")
     for result in cursor:
        ids.append(result['rsid'])  # can also be accessed using result[0]
     cursor.close()
