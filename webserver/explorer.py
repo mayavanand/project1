@@ -89,9 +89,8 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'username' not in session:
             return redirect(url_for('login', next=request.url))
-        if 
         return f(*args, **kwargs)
-    return decorated_funtion
+    return decorated_function
 
 @app.route('/')
 def index():
@@ -109,6 +108,7 @@ def search():
     cursor.close()
     context = dict(data = ids)
     return render_template("search2.html", **context)
+
 @app.route('/groups')
 @login_required
 def groups():
