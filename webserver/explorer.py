@@ -100,7 +100,15 @@ def index():
     else:
         username_session = ""
     return render_template("index.html", session_user_name=username_session)
-
+@app.route('/search')
+def search():
+    ids = []
+    cursor = g.conn.execute("SELECT rsid FROM variant;")
+    for result in cursor:
+       ids.append(result['rsid'])  # can also be accessed using result[0]
+    cursor.close()
+    context = dict(data = ids)
+    return render_template("search2.html", **context)
 @app.route('/groups')
 @login_required
 def groups():
