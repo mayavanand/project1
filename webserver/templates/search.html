@@ -4,14 +4,16 @@
 <body>
   <h1>Search For Variant</h1>
 <div class="dropdown">
-       <form class="search-bar search_header" method="GET" action="/">
+       <form class="search-bar search_header" method="GET">
+<form onsubmit="window.location = '104.196.194.224:8111/' + q.value; return false;">
 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-    <input class="search_input" name="q" tabindex="1" type="text" value="{{query}}"></a> 
-     <ul class="dropdown-menu scrollable-menu" role="menu">
+    <input class="search_input" name="q" tabindex="1" type="text" value="{{query}}">
+</a> 
+     <ul class="dropdown-menu scrollable-menu" role="menu" style="height: auto;max-height: 200px; overflow-x: hidden;">
        {% for n in data %}
-      <li> <a href="/{{n}}">{{n}}</a></li>
-     {% endfor %}
-      </ul>
+         <li> <a href="/{{n}}">{{n}}</a></li>
+       {% endfor %}
+    </ul>
 <button class="search_button" tabindex="2" type="submit">
         <i class="icon-search"></i>
     </button>
