@@ -58,6 +58,7 @@ class SignupForm(FlaskForm):
     email = StringField('Email', validators=[Required(), Email()])
     password = PasswordField('Password', validators=[Required()])
     institution = StringField('Institution (optional)')
+    submit = SubmitField('Sign Up')
 
 @app.before_request
 def before_request():
@@ -221,17 +222,22 @@ def signup():
             researcher = False
             username_form = '%'+ form.email.data + '%'
             password = md5(form.password.data).hexdigest()
-            if form.institution.data.length > 1:
+            if len(form.institution.data) > 1:
                 institution = form.institution.data[0]
                 researcher = True
 
-            cmd = 'INSERT into users VALUES (:email1, :pw)'
-            cursor = g.conn.execute(text(cmd), email1 = username_form, pw = password)
+           
+           
 
             if researcher == True:
+                cmd = 'INSERT into users VALUES (:email1, :pw, True, False)'
+                cursor = g.conn.execute(text(cmd), email1 = username_form, pw = password)
+
                 cmd = 'INSERT into researcher VALUES (:email1, :inst)'
                 cursor = g.conn.execute(text(cmd), email1 = username_form, inst = institution)
             if researcher == False:
+                cmd = 'INSERT into users VALUES (:email1, :pw, False, True)'
+                cursor = g.conn.execute(text(cmd), email1 = username_form, pw = password)           
                 cmd = 'INSERT into casual VALUES (:email1)'
                 cursor = g.conn.execute(text(cmd), email1 = username_form)
 
