@@ -99,6 +99,7 @@ def index():
     else:
         username_session = ""
     return render_template("index.html", session_user_name=username_session)
+
 @app.route('/search')
 def search():
     ids = []
@@ -218,7 +219,6 @@ def login():
 
     except ServerError as e:
         error = str(e)
-    flash(error)    
     return render_template('login.html', form=form, error=error)
  
 @app.route('/signup', methods=['GET', 'POST'])
@@ -236,9 +236,6 @@ def signup():
             if len(form.institution.data) > 1:
                 institution = form.institution.data[0]
                 researcher = True
-
-           
-           
 
             if researcher == True:
                 cmd = 'INSERT into users VALUES (:email1, :pw, True, False)'
