@@ -105,7 +105,7 @@ def search():
     ids = []
     cursor = g.conn.execute("SELECT rsid FROM variant ORDER BY rsid::bytea;")
     for result in cursor:
-       ids.append(result['rsid'])  # can also be accessed using result[0]
+       ids.append(result['rsid']) 
     cursor.close()
     context = dict(data = ids)
     return render_template("search2.html", **context)
@@ -116,7 +116,7 @@ def groups():
   groups = []
   cursor = g.conn.execute("SELECT DISTINCT category FROM relational_groups;")
   for result in cursor:
-    groups.append(result['category'])  # can also be accessed using result[0]
+    groups.append(result['category'])  
   cursor.close()
   context = dict(data = groups)
   return render_template("groupsTry1.html", **context)
@@ -126,7 +126,7 @@ def singleGroup(category):
   cursor = g.conn.execute("SELECT * FROM relational_groups WHERE category = \'"+ category + "\';")
   rsid = []
   for result in cursor:
-    rsid.append(result['rsid'])  # can also be accessed using result[0]
+    rsid.append(result['rsid'])
   cursor.close()
   context = dict(data = rsid)
   return render_template("groupRSID.html", **context)
@@ -139,6 +139,9 @@ def variant(rsid):
   if result is None:
     cursor = g.conn.execute("SELECT * FROM variant WHERE variant.rsid=\'"+rsid+"\';")
     result = cursor.fetchone()
+    if result is None:
+       flash("This variant is not in our database. Please try something else")
+       return redirect(url_for('search'))
   variant.append(result['rsid'])
   variant.append(result['chrom'])
   variant.append(result['pos'])

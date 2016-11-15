@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 <html>
 {% block content %}
+{% for message in get_flashed_messages() %}
+  <div class="aler alert-warning">
+    <button type="button" class="close" data-dimiss="alert">&times;</button>
+    {{ message }}
+</div>
+{% endfor %}
 <body style="text-align:center">
   <h1 style="text=align:center">Search For Variant</h1>
 <div id="wrapper" style="text-align: center"> 
