@@ -196,7 +196,7 @@ def login():
     if 'username' in session:
         return redirect(url_for('index'))
     
-    error = None
+    error = 'None'
     try:
         if request.method == 'POST':
             username_form = '%'+ form.email.data + '%'
@@ -219,6 +219,9 @@ def login():
 
     except ServerError as e:
         error = str(e)
+    if error is not 'None':
+        print(error)
+        flash(error)
     return render_template('login.html', form=form, error=error)
  
 @app.route('/signup', methods=['GET', 'POST'])
