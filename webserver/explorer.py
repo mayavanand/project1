@@ -99,7 +99,6 @@ def index():
     else:
         username_session = ""
     return render_template("index.html", session_user_name=username_session)
-
 @app.route('/search')
 def search():
     ids = []
@@ -123,7 +122,8 @@ def groups():
 
 @app.route('/group/<category>')
 def singleGroup(category):
-  cursor = g.conn.execute("SELECT * FROM relational_groups WHERE category = \'"+ category + "\';")
+  cmd = 'SELECT * FROM relational_groups WHERE category LIKE :category1'
+  cursor = g.conn.execute(text(cmd), category1 = category)
   rsid = []
   for result in cursor:
     rsid.append(result['rsid'])
@@ -134,10 +134,12 @@ def singleGroup(category):
 @app.route('/<rsid>')
 def variant(rsid):
   variant = []
-  cursor = g.conn.execute("SELECT * FROM variant, article WHERE variant.rsid=\'"+rsid+"\' AND variant.rsid = article.rsid;")
+  cmd = 'SELECT * FROM variant, article WHERE variant.rsid Like :rsid1 AND variant.rsid = article.rsid'
+  cursor = g.conn.execute(text(cmd), rsid1 = rsid)
   result = cursor.fetchone()
   if result is None:
-    cursor = g.conn.execute("SELECT * FROM variant WHERE variant.rsid=\'"+rsid+"\';")
+    cmd = 'SELECT * FROM variant where variant.rsid Like :rsid1'
+    cursor = g.conn.execute(text(cmd), rsid1 = rsid)
     result = cursor.fetchone()
     if result is None:
        flash("This variant is not in our database. Please try something else")
@@ -149,7 +151,8 @@ def variant(rsid):
   variant.append(result['alt'])
   variant.append(result['cid'])
   gid = result['gid']
-  cursorGene = g.conn.execute("SELECT gene_name FROM gene WHERE gene.gid="+str(gid)+";")
+  cmd = 'SELECT gene_name FROM gene where gid = :gid1'
+  cursorGene = g.conn.execute(text(cmd), gid1 = str(gid))
   resultGene = cursorGene.fetchone()
   variant.append(resultGene['gene_name'])
   variant.append(result['gid'])
@@ -168,7 +171,8 @@ def variant(rsid):
 
 @app.route('/gene/<gid>')
 def gene(gid):
-    cursor = g.conn.execute("SELECT * from gene WHERE gid = \'" + gid + "\';")
+    cmd = 'SELECT * FROM gene where gid = :gid1'
+    cursor = g.conn.execute(text(cmd), gid1 = gid)
     geneInfo = []
     result = cursor.fetchone()
     geneInfo.append(result['gene_name'])
@@ -181,7 +185,8 @@ def gene(gid):
     return render_template("gene.html", **context)
 @app.route('/cytoband/<cid>')
 def cytoband(cid):
-    cursor = g.conn.execute("SELECT * FROM cytoband WHERE cid = \'"+ cid + "\';")
+    cmd = 'SELECT * FROM cytoband where cid = :cid1'
+    cursor = g.conn.execute(text(cmd), cid1 = cid)
     cyto = []
     result = cursor.fetchone()
     cyto.append(result['cyto_name'])
@@ -199,7 +204,7 @@ def login():
     if 'username' in session:
         return redirect(url_for('index'))
     
-    error = 'None'
+    error = None
     try:
         if request.method == 'POST':
             username_form = '%'+ form.email.data + '%'
@@ -222,9 +227,7 @@ def login():
 
     except ServerError as e:
         error = str(e)
-    if error is not 'None':
-        print(error)
-        flash(error)
+    flash(error)    
     return render_template('login.html', form=form, error=error)
  
 @app.route('/signup', methods=['GET', 'POST'])
@@ -242,6 +245,9 @@ def signup():
             if len(form.institution.data) > 1:
                 institution = form.institution.data[0]
                 researcher = True
+
+           
+           
 
             if researcher == True:
                 cmd = 'INSERT into users VALUES (:email1, :pw, True, False)'
