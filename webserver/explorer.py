@@ -39,7 +39,7 @@ def create_app():
 app = create_app()
 
 #Create navbar
-topbar = Navbar('', View('Home', 'index'), View('Groups', 'groups'), View('Login', 'login'), View('Log Out', 'logout'), View('Sign Up', 'signup'), )
+topbar = Navbar('', View('Home', 'index'), View('Groups', 'groups'), View('Search', 'search'), View('Login', 'login'), View('Log Out', 'logout'), View('Sign Up', 'signup'), )
 
 nav = Nav()
 nav.register_element('top', topbar)
@@ -183,20 +183,6 @@ def gene(gid):
     cursor.close()
     context = dict(data = geneInfo)
     return render_template("gene.html", **context)
-@app.route('/cytoband/<cid>')
-def cytoband(cid):
-    cmd = 'SELECT * FROM cytoband where cid = :cid1'
-    cursor = g.conn.execute(text(cmd), cid1 = cid)
-    cyto = []
-    result = cursor.fetchone()
-    cyto.append(result['cyto_name'])
-    cyto.append(result['chrom'])    
-    cyto.append(result['start_pos'])
-    cyto.append(result['end_pos'])
-    cyto.append(result['gie_stain'])
-    cursor.close()
-    context = dict(data = cyto)
-    return render_template("cytoband.html", **context)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
