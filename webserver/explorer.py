@@ -92,6 +92,22 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def researcher(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_session = session['username']
+        cmd = 'SELECT is_researcher FROM users where email like :email1'
+        cursor = g.conn.execute(text(cmd), email1 = user_session)
+        
+        for row in cursor.fetchall():
+            print(row[0])
+            print('hi')
+            if not row[0]:
+                flash("Must be a researcher to search for variants. Browse groups or create a researcher account!")
+                return redirect(url_for('groups'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/')
 def index():
     if 'username' in session:
@@ -100,6 +116,8 @@ def index():
         username_session = ""
     return render_template("index.html", session_user_name=username_session)
 @app.route('/search')
+@login_required
+@researcher
 def search():
     ids = []
     cursor = g.conn.execute("SELECT rsid FROM variant ORDER BY rsid::bytea;")
@@ -231,21 +249,18 @@ def signup():
             if len(form.institution.data) > 1:
                 institution = form.institution.data[0]
                 researcher = True
-
-           
-           
-
+                      
             if researcher == True:
                 cmd = 'INSERT into users VALUES (:email1, :pw, True, False)'
-                cursor = g.conn.execute(text(cmd), email1 = username_form, pw = password)
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data, pw = password)
 
                 cmd = 'INSERT into researcher VALUES (:email1, :inst)'
-                cursor = g.conn.execute(text(cmd), email1 = username_form, inst = institution)
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data, inst = institution)
             if researcher == False:
                 cmd = 'INSERT into users VALUES (:email1, :pw, False, True)'
-                cursor = g.conn.execute(text(cmd), email1 = username_form, pw = password)           
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data, pw = password)           
                 cmd = 'INSERT into casual VALUES (:email1)'
-                cursor = g.conn.execute(text(cmd), email1 = username_form)
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data)
 
             session['username'] = form.email.data
             flash('Account Created')
