@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+<html>
+{% block content %}
+<body>
+  <h1>Variant</h1>
+{{data}}
+{% if data['list_name'] is defined %}
+<ul>
+<li> {{data}}</li>
+</ul>
+{% endif %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>RSID</th>                                                                                     
+      <th>Chromosone</th>
+      <th>Position</th>
+      <th>Reference</th>
+      <th>Alternate</th>
+      <th>Cytoband</th>
+      <th>Gene</th>
+    </tr>
+  </thead>  
+<tbody>
+    <tr>
+    {% for n in data[:5] %}
+    <td>{{n}}</td>
+    {% endfor %}
+    <td><a href="/cytoband/{{data[5]}}">
+    {{data[5]}}</a></td>
+    <td><a href="/gene/{{data[7]}}">
+    {{data[6]}}</a></td>
+    </tr>
+</tbody></table>
+{% if data | length > 8 %}
+<h1> Related Articles </h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>First Author</th>
+    </tr>
+  </thead>
+<tbody>
+    <tr>
+<td>
+<a href="{{data[10]}}">
+    {{data[8]}}
+</a>
+</td>
+    {% for n in data[9:10] %}
+    <td>{{n}}</td>
+    {% endfor %}
+    </tr>
+    <tr>
+<td>
+<a href="{{data[13]}}">
+    {{data[11]}}
+</a>
+</td>
+    {% for n in data[12:13] %}
+    <td>{{n}}</td>
+    {% endfor %}
+    </tr>
+</tbody></table>
+{% endif %}
+</body>
+
+{% endblock %}
+</html>

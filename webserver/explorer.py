@@ -28,6 +28,7 @@ from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import Required, Email
 from functools import wraps
 
+
 #Create app and configure boostrap
 def create_app():
     tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -183,11 +184,23 @@ def variant(rsid):
       result2 = cursor.fetchone()
       variant.append(result2['title'])
       variant.append(result2['first_author'])                                                                                                                      
-      variant.append(result2['link'])                                                                                
+      variant.append(result2['link'])
+  print 'username'
+  if 'username' in session:
+    print 'True true'
+    cmd = 'SELECT DISTINCT list_name FROM Watchlist_Created where email = :email1'
+    cursor = g.conn.execute(text(cmd), email1 = session['username'])
+    result = cursor.fetchall()
+    for entry in result:
+        variant.append(entry['list_name'])
+        print entry                                                                                
   cursor.close()
   context = dict(data = variant)
-  return render_template("variantTry2.html", **context)
-
+  return render_template("variantTry3.html", **context)
+def addTo(watchlist, rsid):
+    cmd = 'INSERT into Watchlist_Created VALUES (:list_name, :rsid1, :username1)'
+    cursor = g.conn.execute(text(cmd), list_name = watchlist, rsid1 = rsid, username1 = 'username')
+    return;
 @app.route('/gene/<gid>')
 def gene(gid):
     cmd = 'SELECT * FROM gene where gid = :gid1'
@@ -281,7 +294,11 @@ def logout():
 
 @app.route('/watchlist')
 def watchlist():
+
     print(session['username'])
+#     if 'username' not in session:
+#        return redirect(url_for('index'))
+
 #    if 'username' in session:
 #        email = session['username']
 #        return redirect(url_for('watchlist', user = email))
