@@ -2,11 +2,11 @@
 <html>
 {% block content %}
 <body>
-  <h1>My Watchlists</h1>
+  <h1>{{specific}}</h1>
 
 <div>
     {% for n in data %}
-   <p> <a href="/watchlist/{{n}}">
+   <p> <a href="/{{n}}">
     {{n}}
 </a></p>
     {% endfor %}

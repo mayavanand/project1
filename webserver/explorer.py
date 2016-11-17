@@ -184,19 +184,10 @@ def variant(rsid):
       result2 = cursor.fetchone()
       variant.append(result2['title'])
       variant.append(result2['first_author'])                                                                                                                      
-      variant.append(result2['link'])
-  print 'username'
-  if 'username' in session:
-    print 'True true'
-    cmd = 'SELECT DISTINCT list_name FROM Watchlist_Created where email = :email1'
-    cursor = g.conn.execute(text(cmd), email1 = session['username'])
-    result = cursor.fetchall()
-    for entry in result:
-        variant.append(entry['list_name'])
-        print entry                                                                                
+      variant.append(result2['link'])                                                              
   cursor.close()
   context = dict(data = variant)
-  return render_template("variantTry3.html", **context)
+  return render_template("variantTry2.html", **context)
 def addTo(watchlist, rsid):
     cmd = 'INSERT into Watchlist_Created VALUES (:list_name, :rsid1, :username1)'
     cursor = g.conn.execute(text(cmd), list_name = watchlist, rsid1 = rsid, username1 = 'username')
@@ -292,22 +283,30 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
 
+
 @app.route('/watchlist')
+@login_required
 def watchlist():
+    lists = []
+    cmd = 'select distinct list_name from watchlist_created where email like :email1;'
+    cursor = g.conn.execute(text(cmd), email1 = session['username'])
+    for result in cursor:
+        lists.append(result['list_name'])
+    cursor.close()
+    context = dict(data = lists)
+    return render_template("watchlist.html", **context)
 
-    print(session['username'])
-#     if 'username' not in session:
-#        return redirect(url_for('index'))
+@app.route('/watchlist/<listname>')
+def watchlistlist(listname):
+    variants = []
+    cmd = 'select distinct rsid from watchlist_created where email like :email1 and list_name like :list1;'
+    cursor = g.conn.execute(text(cmd), email1 = session['username'], list1 = listname)
+    for result in cursor:
+        variants.append(result['rsid'])
+    cursor.close()
+    context = dict(data = variants)
+    return render_template('watchlistlist.html', specific = listname, **context)
 
-#    if 'username' in session:
-#        email = session['username']
-#        return redirect(url_for('watchlist', user = email))
-    return render_template('watchlist.html')
-
-#@app.route('/watchlist/<user>')
-#def watchlistu(user):
-#    print(user)
-#    return render_template('watchlist.html', **context)
 
 if __name__ == "__main__":
   import click
