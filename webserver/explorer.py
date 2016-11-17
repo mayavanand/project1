@@ -279,18 +279,29 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
 
-@app.route('/watchlist')
-def watchlist():
-    print(session['username'])
-#    if 'username' in session:
-#        email = session['username']
-#        return redirect(url_for('watchlist', user = email))
-    return render_template('watchlist.html')
 
-#@app.route('/watchlist/<user>')
-#def watchlistu(user):
-#    print(user)
-#    return render_template('watchlist.html', **context)
+@app.route('/watchlist')
+@login_required
+def watchlist():
+    lists = []
+    cmd = 'select distinct list_name from watchlist_created where email like :email1;'
+    cursor = g.conn.execute(text(cmd), email1 = session['username'])
+    for result in cursor:
+        lists.append(result['list_name'])
+    cursor.close()
+    context = dict(data = lists)
+    return render_template("watchlist.html", **context)
+
+@app.route('/watchlist/<listname>')
+def watchlistlist(listname):
+    variants = []
+    cmd = 'select distinct rsid from watchlist_created where email like :email1 and list_name like :list1;'
+    cursor = g.conn.execute(text(cmd), email1 = session['username'], list1 = listname)
+    for result in cursor:
+        variants.append(result['rsid'])
+    cursor.close()
+    context = dict(data = variants)
+    return render_template('watchlistlist.html', specific = listname, **context)
 
 if __name__ == "__main__":
   import click
