@@ -3,6 +3,12 @@
 {% block content %}
 <body>
   <h1>Variant</h1>
+{{data}}
+{% if data['list_name'] is defined %}
+<ul>
+<li> {{data}}</li>
+</ul>
+{% endif %}
 <table class="table">
   <thead>
     <tr>
@@ -14,8 +20,7 @@
       <th>Cytoband</th>
       <th>Gene</th>
     </tr>
-  </thead> 
-<p> <a href = "/watchlist/add/{{data[0]}}"> Add this variant to a watchlist </a></p> 
+  </thead>  
 <tbody>
     <tr>
     {% for n in data[:5] %}
@@ -27,7 +32,7 @@
     {{data[6]}}</a></td>
     </tr>
 </tbody></table>
-{% if data|length > 8 %}
+{% if data | length > 8 %}
 <h1> Related Articles </h1>
 <table class="table">
   <thead>

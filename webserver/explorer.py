@@ -28,6 +28,7 @@ from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import Required, Email
 from functools import wraps
 
+
 #Create app and configure boostrap
 def create_app():
     tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -60,7 +61,9 @@ class SignupForm(FlaskForm):
     password = PasswordField('Password', validators=[Required()])
     institution = StringField('Institution (optional)')
     submit = SubmitField('Sign Up')
-
+class WatchList(FlaskForm):
+    list_name = StringField('Add to new watchlist:')
+    submit = SubmitField('Create List')
 @app.before_request
 def before_request():
   """
@@ -117,7 +120,6 @@ def index():
         username_session = ""
     return render_template("index.html", session_user_name=username_session)
 @app.route('/search')
-@login_required
 @researcher
 def search():
     ids = []
@@ -127,7 +129,29 @@ def search():
     cursor.close()
     context = dict(data = ids)
     return render_template("search2.html", **context)
-
+@app.route('/watchlist/add/<rsid>', methods=['GET', 'POST'])
+@login_required
+def addToWatchlist(rsid):
+    lists = []
+    form = WatchList()
+    cmd = 'SELECT DISTINCT list_name FROM Watchlist_Created WHERE email LIKE :username1'
+    cursor = g.conn.execute(text(cmd), username1 = session['username'])
+    result = cursor.fetchall()
+    lists.append(rsid)
+    for entry in result:
+       lists.append(entry['list_name'])
+    if request.method == 'POST':
+        new_list_name = form.list_name.data
+        cmd = 'INSERT INTO Watchlist_CREATED VALUES (:list_name, :rsid1, :username1)'                                                                           
+        cursor = g.conn.execute(text(cmd), list_name = new_list_name, rsid1 = rsid, username1 = session['username'])
+        return render_template('added.html', variant = rsid)
+    context = dict(data = lists)
+    return render_template("addToWatchlist.html", form = form, **context)
+@app.route('/add/<list_name>/<rsid>')
+def addToSpecificWatchlist(list_name, rsid):
+    cmd = 'INSERT into Watchlist_Created VALUES (:list_name1, :rsid1, :username1)'
+    cursor = g.conn.execute(text(cmd), list_name1 = list_name, rsid1 = rsid, username1 = session['username'])
+    return render_template("added.html", variant = rsid)
 @app.route('/groups')
 @login_required
 def groups():
@@ -183,10 +207,23 @@ def variant(rsid):
       result2 = cursor.fetchone()
       variant.append(result2['title'])
       variant.append(result2['first_author'])                                                                                                                      
-      variant.append(result2['link'])                                                                                
+      variant.append(result2['link'])                                                              
   cursor.close()
   context = dict(data = variant)
   return render_template("variantTry2.html", **context)
+@app.route('/cytoband/<cid>')
+def cytoband(cid):
+    cursor = g.conn.execute("SELECT * FROM cytoband WHERE cid = \'"+ cid + "\';")
+    cyto = []
+    result = cursor.fetchone()
+    cyto.append(result['cyto_name'])
+    cyto.append(result['chrom'])
+    cyto.append(result['start_pos'])
+    cyto.append(result['end_pos'])
+    cyto.append(result['gie_stain'])
+    cursor.close()
+    context = dict(data = cyto)
+    return render_template("cytoband.html", **context)
 
 @app.route('/gene/<gid>')
 def gene(gid):
@@ -202,21 +239,6 @@ def gene(gid):
     cursor.close()
     context = dict(data = geneInfo)
     return render_template("gene.html", **context)
-
-@app.route('/cytoband/<cid>')
-def cytoband(cid):
-    cursor = g.conn.execute("SELECT * FROM cytoband WHERE cid = \'"+ cid + "\';")
-    cyto = []
-    result = cursor.fetchone()
-    cyto.append(result['cyto_name'])
-    cyto.append(result['chrom'])    
-    cyto.append(result['start_pos'])
-    cyto.append(result['end_pos'])
-    cyto.append(result['gie_stain'])
-    cursor.close()
-    context = dict(data = cyto)
-    return render_template("cytoband.html", **context)
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()    
@@ -316,6 +338,7 @@ def watchlistlist(listname):
     cursor.close()
     context = dict(data = variants)
     return render_template('watchlistlist.html', specific = listname, **context)
+
 
 if __name__ == "__main__":
   import click

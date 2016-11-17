@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 <html>
 {% block content %}
+{{data}}
 <body>
   <h1>Variant</h1>
 <table class="table">
@@ -14,8 +15,7 @@
       <th>Cytoband</th>
       <th>Gene</th>
     </tr>
-  </thead> 
-<p> <a href = "/watchlist/add/{{data[0]}}"> Add this variant to a watchlist </a></p> 
+  </thead>  
 <tbody>
     <tr>
     {% for n in data[:5] %}
@@ -27,7 +27,7 @@
     {{data[6]}}</a></td>
     </tr>
 </tbody></table>
-{% if data|length > 8 %}
+{% if data['title'] is defined %}
 <h1> Related Articles </h1>
 <table class="table">
   <thead>
