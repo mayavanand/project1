@@ -39,7 +39,7 @@ def create_app():
 app = create_app()
 
 #Create navbar
-topbar = Navbar('', View('Home', 'index'), View('Groups', 'groups'), View('Search', 'search'), View('Login', 'login'), View('Log Out', 'logout'), View('Sign Up', 'signup'), )
+topbar = Navbar('', View('Home', 'index'), View('Groups', 'groups'), View('Search', 'search'), View('Login', 'login'), View('My Watchlists', 'watchlist'), View('Log Out', 'logout'), View('Sign Up', 'signup'), )
 
 nav = Nav()
 nav.register_element('top', topbar)
@@ -278,6 +278,19 @@ def signup():
 def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
+
+@app.route('/watchlist')
+def watchlist():
+    print(session['username'])
+#    if 'username' in session:
+#        email = session['username']
+#        return redirect(url_for('watchlist', user = email))
+    return render_template('watchlist.html')
+
+#@app.route('/watchlist/<user>')
+#def watchlistu(user):
+#    print(user)
+#    return render_template('watchlist.html', **context)
 
 if __name__ == "__main__":
   import click

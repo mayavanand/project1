@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+<html>
+{% block content %}
+<body>
+  <h1>Gene</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Gene Name</th>
+      <th>Chromosome</th>
+      <th>Start Position</th>
+      <th>End Position</th>
+      <th>Phenotype</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+     {% for n in data %}
+    <td>{{n}}</td>
+    {% endfor %}
+     </tr>
+</tbody></table>
+</body>
+{% endblock %}
+</html>
