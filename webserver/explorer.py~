@@ -2,14 +2,14 @@
 
 """
 Columbia W4111 Intro to databases
-Example webserver
-
+Maya Anand and Hollis Mills
+mva2112 and hm2602
 To run locally
 
-    python server.py
+    python explorer.py
 
-Go to http://localhost:8111 in your browser
-
+MAYA: Go to http://104.196.182.25:8111 in your browser
+HOLLIS: Go to http://104.196.194.224:8111 in your browser
 
 A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
@@ -18,75 +18,60 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
-
-tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-app = Flask(__name__, template_folder=tmpl_dir)
-
-
-#
-# The following uses the postgresql test.db -- you can use this for debugging purposes
-# However for the project you will need to connect to your Part 2 database in order to use the
-# data
-#
-# XXX: The URI should be in the format of: 
-#
-#     postgresql://USER:PASSWORD@<IP_OF_POSTGRE_SQL_SERVER>/postgres
-#
-# For example, if you had username ewu2493, password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://ewu2493:foobar@<IP_OF_POSTGRE_SQL_SERVER>/postgres"
-#
-# Swap out the URI below with the URI for the database created in part 2
-DATABASEURI = "sqlite:///test.db"
+from flask import Flask, request, render_template, g, redirect, Response, session, url_for, escape, flash
+from hashlib import md5
+from flask_bootstrap import Bootstrap
+from flask_nav import Nav
+from flask_nav.elements import *
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, PasswordField
+from wtforms.validators import Required, Email
+from functools import wraps
 
 
-#
-# This line creates a database engine that knows how to connect to the URI above
-#
+#Create app and configure boostrap
+def create_app():
+    tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+    app = Flask(__name__, template_folder=tmpl_dir)
+    app.config['SECRET_KEY'] = 'apple-pineapple-cle'
+    Bootstrap(app)
+    return app
+
+app = create_app()
+
+#Create navbar
+topbar = Navbar('', View('Home', 'index'), View('Groups', 'groups'), View('Search', 'search'), View('Login', 'login'), View('My Watchlists', 'watchlist'), View('Log Out', 'logout'), View('Sign Up', 'signup'), )
+
+nav = Nav()
+nav.register_element('top', topbar)
+nav.init_app(app)
+
+DATABASEURI = "postgres://mva2112:n3dek@104.196.175.120/postgres"
 engine = create_engine(DATABASEURI)
 
+class ServerError(Exception):pass
 
-#
-# START SQLITE SETUP CODE
-#
-# after these statements run, you should see a file test.db in your webserver/ directory
-# this is a sqlite database that you can query like psql typing in the shell command line:
-# 
-#     sqlite3 test.db
-#
-# The following sqlite3 commands may be useful:
-# 
-#     .tables               -- will list the tables in the database
-#     .schema <tablename>   -- print CREATE TABLE statement for table
-# 
-# The setup code should be deleted once you switch to using the Part 2 postgresql database
-#
-engine.execute("""DROP TABLE IF EXISTS test;""")
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);""")
-engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
-#
-# END SQLITE SETUP CODE
-#
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[Required(), Email()])
+    password = PasswordField('Password', validators=[Required()])
+    submit = SubmitField('Log In')
 
-
+class SignupForm(FlaskForm):
+    email = StringField('Email', validators=[Required(), Email()])
+    password = PasswordField('Password', validators=[Required()])
+    institution = StringField('Institution (optional)')
+    submit = SubmitField('Sign Up')
 
 @app.before_request
 def before_request():
   """
-  This function is run at the beginning of every web request 
-  (every time you enter an address in the web browser).
-  We use it to setup a database connection that can be used throughout the request
-
+  setup a database connection that can be used throughout the request
   The variable g is globally accessible
   """
   try:
     g.conn = engine.connect()
   except:
-    print "uh oh, problem connecting to database"
+    print "problem connecting to database"
     import traceback; traceback.print_exc()
     g.conn = None
 
@@ -94,112 +79,249 @@ def before_request():
 def teardown_request(exception):
   """
   At the end of the web request, this makes sure to close the database connection.
-  If you don't the database could run out of memory!
   """
   try:
     g.conn.close()
   except Exception as e:
     pass
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            flash('Log in to see page!')
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
-#
-# @app.route is a decorator around index() that means:
-#   run index() whenever the user tries to access the "/" path using a GET request
-#
-# If you wanted the user to go to e.g., localhost:8111/foobar/ with POST or GET then you could use
-#
-#       @app.route("/foobar/", methods=["POST", "GET"])
-#
-# PROTIP: (the trailing / in the path is important)
-# 
-# see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
-# see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
-#
+def researcher(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_session = session['username']
+        cmd = 'SELECT is_researcher FROM users where email like :email1'
+        cursor = g.conn.execute(text(cmd), email1 = user_session)
+        
+        for row in cursor.fetchall():
+            print(row[0])
+            print('hi')
+            if not row[0]:
+                flash("Must be a researcher to search for variants. Browse groups or create a researcher account!")
+                return redirect(url_for('groups'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/')
 def index():
-  """
-  request is a special object that Flask provides to access web request information:
-
-  request.method:   "GET" or "POST"
-  request.form:     if the browser submitted a form, this contains the data in the form
-  request.args:     dictionary of URL arguments e.g., {a:1, b:2} for http://localhost?a=1&b=2
-
-  See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
-  """
-
-  # DEBUG: this is debugging code to see what request looks like
-  print request.args
-
-
-  #
-  # example of a database query
-  #
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
+    if 'username' in session:
+        username_session = escape(session['username']).capitalize()
+    else:
+        username_session = ""
+    return render_template("index.html", session_user_name=username_session)
+@app.route('/search')
+@login_required
+@researcher
+def search():
+    ids = []
+    cursor = g.conn.execute("SELECT rsid FROM variant ORDER BY rsid::bytea;")
+    for result in cursor:
+       ids.append(result['rsid']) 
+    cursor.close()
+    context = dict(data = ids)
+    return render_template("search2.html", **context)
+@app.route('/watchlist/add/<rsid>')
+@login_required
+def addToWatchlist(rsid):
+    lists = []
+    cmd = 'SELECT DISTINCT list_name FROM Watchlist_Created WHERE email LIKE :username1'
+    cursor = g.conn.execute(text(cmd), username1 = session['username'])
+    result = cursor.fetchall()
+    lists.append(rsid)
+    for entry in result:
+       lists.append(entry['list_name'])
+    context = dict(data = lists)
+    return render_template("addToWatchlist.html", **context)
+@app.route('/add/<list_name>/<rsid>')
+def addToSpecificWatchlist(list_name, rsid):
+    cmd = 'INSERT into Watchlist_Created VALUES (:list_name1, :rsid1, :username1)'
+    cursor = g.conn.execute(text(cmd), list_name1 = list_name, rsid1 = rsid, username1 = session['username'])
+    return render_template("added.html")
+@app.route('/groups')
+@login_required
+def groups():
+  groups = []
+  cursor = g.conn.execute("SELECT DISTINCT category FROM relational_groups;")
   for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
+    groups.append(result['category'])  
   cursor.close()
+  context = dict(data = groups)
+  return render_template("groupsTry1.html", **context)
 
-  #
-  # Flask uses Jinja templates, which is an extension to HTML where you can
-  # pass data to a template and dynamically generate HTML based on the data
-  # (you can think of it as simple PHP)
-  # documentation: https://realpython.com/blog/python/primer-on-jinja-templating/
-  #
-  # You can see an example template in templates/index.html
-  #
-  # context are the variables that are passed to the template.
-  # for example, "data" key in the context variable defined below will be 
-  # accessible as a variable in index.html:
-  #
-  #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
-  #     <div>{{data}}</div>
-  #     
-  #     # creates a <div> tag for each element in data
-  #     # will print: 
-  #     #
-  #     #   <div>grace hopper</div>
-  #     #   <div>alan turing</div>
-  #     #   <div>ada lovelace</div>
-  #     #
-  #     {% for n in data %}
-  #     <div>{{n}}</div>
-  #     {% endfor %}
-  #
-  context = dict(data = names)
+@app.route('/group/<category>')
+def singleGroup(category):
+  cmd = 'SELECT * FROM relational_groups WHERE category LIKE :category1'
+  cursor = g.conn.execute(text(cmd), category1 = category)
+  rsid = []
+  for result in cursor:
+    rsid.append(result['rsid'])
+  cursor.close()
+  context = dict(data = rsid)
+  return render_template("groupRSID.html", **context)
 
+@app.route('/<rsid>')
+def variant(rsid):
+  variant = []
+  cmd = 'SELECT * FROM variant, article WHERE variant.rsid Like :rsid1 AND variant.rsid = article.rsid'
+  cursor = g.conn.execute(text(cmd), rsid1 = rsid)
+  result = cursor.fetchone()
+  if result is None:
+    cmd = 'SELECT * FROM variant where variant.rsid Like :rsid1'
+    cursor = g.conn.execute(text(cmd), rsid1 = rsid)
+    result = cursor.fetchone()
+    if result is None:
+       flash("This variant is not in our database. Please try something else")
+       return redirect(url_for('search'))
+  variant.append(result['rsid'])
+  variant.append(result['chrom'])
+  variant.append(result['pos'])
+  variant.append(result['ref'])
+  variant.append(result['alt'])
+  variant.append(result['cid'])
+  gid = result['gid']
+  cmd = 'SELECT gene_name FROM gene where gid = :gid1'
+  cursorGene = g.conn.execute(text(cmd), gid1 = str(gid))
+  resultGene = cursorGene.fetchone()
+  variant.append(resultGene['gene_name'])
+  variant.append(result['gid'])
+  if 'title' in result:
+    variant.append(result['title']) 
+    variant.append(result['first_author'])                                                                                    
+    variant.append(result['link'])
+    if (cursor.rowcount == 2):
+      result2 = cursor.fetchone()
+      variant.append(result2['title'])
+      variant.append(result2['first_author'])                                                                                                                      
+      variant.append(result2['link'])                                                              
+  cursor.close()
+  context = dict(data = variant)
+  return render_template("variantTry2.html", **context)
+def addTo(watchlist, rsid):
+    cmd = 'INSERT into Watchlist_Created VALUES (:list_name, :rsid1, :username1)'
+    cursor = g.conn.execute(text(cmd), list_name = watchlist, rsid1 = rsid, username1 = 'username')
+    return;
+@app.route('/gene/<gid>')
+def gene(gid):
+    cmd = 'SELECT * FROM gene where gid = :gid1'
+    cursor = g.conn.execute(text(cmd), gid1 = gid)
+    geneInfo = []
+    result = cursor.fetchone()
+    geneInfo.append(result['gene_name'])
+    geneInfo.append(result['chrom'])
+    geneInfo.append(result['start_pos'])
+    geneInfo.append(result['end_pos'])
+    geneInfo.append(result['phenotype'])
+    cursor.close()
+    context = dict(data = geneInfo)
+    return render_template("gene.html", **context)
 
-  #
-  # render_template looks in the templates/ folder for files.
-  # for example, the below file reads template/index.html
-  #
-  return render_template("index.html", **context)
-
-#
-# This is an example of a different path.  You can see it at
-# 
-#     localhost:8111/another
-#
-# notice that the functio name is another() rather than index()
-# the functions for each app.route needs to have different names
-#
-@app.route('/another')
-def another():
-  return render_template("anotherfile.html")
-
-
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-  return redirect('/')
-
-
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    abort(401)
-    this_is_never_executed()
+    form = LoginForm()    
+    if 'username' in session:
+        return redirect(url_for('index'))
+    
+    error = 'None'
+    try:
+        if request.method == 'POST':
+            username_form = '%'+ form.email.data + '%'
+            cmd = 'SELECT COUNT(1) FROM users WHERE email like :email1'
+            cursor = g.conn.execute(text(cmd), email1 = username_form)
+        
+            if not cursor.fetchone()[0]:
+                raise ServerError('Invalid username')
+                flash('USER NOT FOUND')
+        
+            password_form = form.password.data            
+            cmd = 'SELECT password_hash FROM users where email like :email1'
+            cursor = g.conn.execute(text(cmd), email1 = username_form)
+        
+            for row in cursor.fetchall():
+                if md5(password_form).hexdigest() == row[0]:
+                    session['username'] = form.email.data
+                    return redirect(url_for('index'))
+            raise ServerError('Invalid password')
+
+    except ServerError as e:
+        error = str(e)
+    if error is not 'None':
+        flash(error)    
+    return render_template('login.html', form=form, error=error)
+ 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = SignupForm()
+    if 'username' in session:
+        return redirect(url_for('index'))
+
+    error = 'None'
+    try:
+        if request.method == 'POST':
+            researcher = False
+            username_form = '%'+ form.email.data + '%'
+            password = md5(form.password.data).hexdigest()
+            if len(form.institution.data) > 1:
+                institution = form.institution.data[0]
+                researcher = True
+                      
+            if researcher == True:
+                cmd = 'INSERT into users VALUES (:email1, :pw, True, False)'
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data, pw = password)
+
+                cmd = 'INSERT into researcher VALUES (:email1, :inst)'
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data, inst = institution)
+            if researcher == False:
+                cmd = 'INSERT into users VALUES (:email1, :pw, False, True)'
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data, pw = password)           
+                cmd = 'INSERT into casual VALUES (:email1)'
+                cursor = g.conn.execute(text(cmd), email1 = form.email.data)
+
+            session['username'] = form.email.data
+            flash('Account Created')
+            return redirect(url_for('index'))
+            
+    except ServerError as e:
+        error = str(e)
+    if error is not 'None':
+        flash(error)
+    return render_template('signup.html', form=form, error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
+
+@app.route('/watchlist')
+@login_required
+def watchlist():
+    lists = []
+    cmd = 'select distinct list_name from watchlist_created where email like :email1;'
+    cursor = g.conn.execute(text(cmd), email1 = session['username'])
+    for result in cursor:
+        lists.append(result['list_name'])
+    cursor.close()
+    context = dict(data = lists)
+    return render_template("watchlist.html", **context)
+
+@app.route('/watchlist/<listname>')
+def watchlistlist(listname):
+    variants = []
+    cmd = 'select distinct rsid from watchlist_created where email like :email1 and list_name like :list1;'
+    cursor = g.conn.execute(text(cmd), email1 = session['username'], list1 = listname)
+    for result in cursor:
+        variants.append(result['rsid'])
+    cursor.close()
+    context = dict(data = variants)
+    return render_template('watchlistlist.html', specific = listname, **context)
 
 
 if __name__ == "__main__":

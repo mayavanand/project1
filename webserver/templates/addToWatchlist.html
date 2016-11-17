@@ -1,0 +1,21 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% extends "base.html" %}
+<html>
+{% block content %}
+<body style="text-align:center">
+<h1 style="text=align:center">Add to Existing Watchlist</h1>
+<div id="wrapper" style="text-align: center"> 
+ <ul>
+
+           {% for n in data[1:] %}
+           <li><a href ="/add/{{n}}/{{data[0]}}">{{n}}</a></li>
+          {% endfor %}
+</ul>
+<h1 style="text=align:center">Create new watchlist</h1>
+<p> Enter Watchlist name</p> {{ wtf.quick_form(form) }}
+
+</div>
+</body>
+{% endblock %}
+ </html>
