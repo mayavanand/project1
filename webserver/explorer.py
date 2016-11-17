@@ -203,6 +203,20 @@ def gene(gid):
     context = dict(data = geneInfo)
     return render_template("gene.html", **context)
 
+@app.route('/cytoband/<cid>')
+def cytoband(cid):
+    cursor = g.conn.execute("SELECT * FROM cytoband WHERE cid = \'"+ cid + "\';")
+    cyto = []
+    result = cursor.fetchone()
+    cyto.append(result['cyto_name'])
+    cyto.append(result['chrom'])    
+    cyto.append(result['start_pos'])
+    cyto.append(result['end_pos'])
+    cyto.append(result['gie_stain'])
+    cursor.close()
+    context = dict(data = cyto)
+    return render_template("cytoband.html", **context)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()    
